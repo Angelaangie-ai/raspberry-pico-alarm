@@ -9,8 +9,10 @@ CMD_MAIL = 'MAIL'
 AUTH_PLAIN = 'PLAIN'
 AUTH_LOGIN = 'LOGIN'
 
+# Constants for SMTP communication
 class SMTP:
     def cmd(self, cmd_str):
+        # Send a command to the SMTP server and read the response
         sock = self._sock;
         sock.write('%s\r\n' % cmd_str)
         resp = []
@@ -22,6 +24,8 @@ class SMTP:
         return int(code), resp
 
     def __init__(self, host, port, ssl=False, username=None, password=None):
+    # Initialize SMTP object with host, port, and optional SSL, username, password
+
         import ussl
         self.username = username
         addr = usocket.getaddrinfo(host, port)[0][-1]
@@ -46,6 +50,7 @@ class SMTP:
             self.login(username, password)
 
     def login(self, username, password):
+        # Login to the SMTP server with the provided username and password
         self.username = username
         code, resp = self.cmd(CMD_EHLO + ' ' + LOCAL_DOMAIN)
         assert code==250, '%d, %s' % (code, resp)
@@ -71,6 +76,7 @@ class SMTP:
         return code, resp
 
     def to(self, addrs, mail_from=None):
+        # Specify the recipient of the mail and sender address
         mail_from = self.username if mail_from==None else mail_from
         code, resp = self.cmd(CMD_EHLO + ' ' + LOCAL_DOMAIN)
         assert code==250, '%d' % code
