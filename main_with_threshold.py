@@ -8,18 +8,21 @@ from machine import ADC, Pin
 # Potentiometer Setup
 adc_pin = Pin(26)
 adc = ADC(adc_pin)
-threshold = 0.2
+threshold = 0.7
 
 # Email details
-sender_email = 'angela.busheska@gmail.com'
-sender_name = 'Angela Busheska'
-sender_app_password = 'jixy uvhu cqtt ryem'
-recipient_email = 'angela.busheska@gmail.com'
+sender_email = 'Place sender email here'
+sender_name = 'Place sender name here'
+sender_app_password = 'Place sender app password here'
+recipient_email = 'Place recipient email here'
+recipient_email_text_message = 'Place recipient email text message here'
 email_subject = 'Email from RPi Pico'
+interval_when_a_problem_with_pressure_is_detected = 600
+interval_when_no_problem_with_pressure_is_detected = 86400
 
 # Network credentials
-ssid = 'Mojo-2.45GHz'
-password = 'samster123'
+ssid = 'Name of The Network'
+password = 'Name of the Password'
 
 # Connect to Wi-Fi
 wlan = network.WLAN(network.STA_IF)
@@ -48,10 +51,10 @@ def read_voltage(adc):
     return voltage
 
 # Function to send email
-def send_email(message):
+def send_email(message, recipient):
     smtp = umail.SMTP('smtp.gmail.com', 465, ssl=True)
     smtp.login(sender_email, sender_app_password)
-    smtp.to(recipient_email)
+    smtp.to(recipient)
     smtp.write("From:" + sender_name + "<" + sender_email + ">\n")
     smtp.write("Subject:" + email_subject + "\n")
     smtp.write(message)
@@ -60,6 +63,7 @@ def send_email(message):
     print("Email sent")
 
 # Main loop
+send_email("The monitoring has started\n", recipient_email)  # Send a start-up email
 last_daily_update = utime.time()
 while True:
     current_time = utime.time()
@@ -67,13 +71,13 @@ while True:
     print("Voltage at the junction: ", voltage)
 
     if voltage < threshold:
-        send_email("Potentiometer value is below the threshold\n")
-        utime.sleep(60)  # Delay for 1 minute before checking again
+        send_email("Critically low presure is detected\n", recipient_email)
+        send_email("Critically low presure is detected\n", recipient_email_text_message)
+        utime.sleep(interval_when_a_problem_with_pressure_is_detected)  # Delay for 1 minute before checking again
     else:
         # Send a daily email if everything is fine
-        if current_time - last_daily_update > 86400:  
-            send_email("Everything is working great!\n")
+        if current_time - last_daily_update > interval_when_no_problem_with_pressure_is_detected:  
+            send_email("No Problem Detected!\n", recipient_email)
             last_daily_update = current_time
 
     utime.sleep(1)  # Delay for 1 second
-
